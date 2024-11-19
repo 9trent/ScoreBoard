@@ -8,7 +8,7 @@ public interface ScoreBoard {
 
   void startGame(Team homeTeam, Team awayTeam);
 
-  void finishGame(Team homeTeam, Team awayTeam);
+  void finishGame(String homeTeamName, String awayTeamName);
 
   void updateScore(Team homeTeam, Team awayTeam);
 

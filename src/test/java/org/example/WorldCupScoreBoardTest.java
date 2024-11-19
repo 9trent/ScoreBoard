@@ -3,6 +3,8 @@ package org.example;
 import org.example.exception.ScoreBoardException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +17,8 @@ class WorldCupScoreBoardTest {
 
   private static final Team MEXICO_TEAM = new Team("Mexico", 0);
   private static final Team POLAND_TEAM = new Team("Poland", 0);
+  private static final Team GERMANY_TEAM = new Team("Germany", 0);
+  private static final Team ITALY_TEAM = new Team("Italy", 0);
 
   WorldCupScoreBoard worldCupScoreBoard;
 
@@ -32,6 +36,7 @@ class WorldCupScoreBoardTest {
   // 4. negative case - same name for homeTeam and awayTeam
   // 5. negative case - one team name is invalid
   // 6. negative case - names swapped
+  // 7. negative case - one team name is null
 
   @Test
   void shouldStartGame_whenInvoked_givenValidTeamsName() {
@@ -41,14 +46,14 @@ class WorldCupScoreBoardTest {
 
     // when
     worldCupScoreBoard.startGame(MEXICO_TEAM, POLAND_TEAM);
-    worldCupScoreBoard.startGame(new Team("Germany", 0), new Team("Italy", 0));
+    worldCupScoreBoard.startGame(GERMANY_TEAM, ITALY_TEAM);
 
     //then
     assertEquals(expectedNumberOfMatches, worldCupScoreBoard.getSummary().size());
   }
 
   @Test
-  void shouldThrowException_whenStartingGame_givenOneTeamNameIsNull() {
+  void shouldThrowException_whenStartingGame_givenOneTeamIsNull() {
 
     // given
     String expectedExceptionMessage = "Team cannot be null.";
@@ -64,12 +69,12 @@ class WorldCupScoreBoardTest {
   void shouldThrowException_whenStartingGame_givenOneTeamNameSameAsTeamNameInExistingMatch() {
 
     // given
-    Team newHomeTeam = new Team("Argentina", 0);
+    Team anotherHomeTeam = new Team("Argentina", 0);
     String expectedExceptionMessage = "One or both teams are already playing.";
 
     // when
     worldCupScoreBoard.startGame(MEXICO_TEAM, POLAND_TEAM);
-    Exception exception = assertThrows(ScoreBoardException.class, () -> worldCupScoreBoard.startGame(newHomeTeam, POLAND_TEAM));
+    Exception exception = assertThrows(ScoreBoardException.class, () -> worldCupScoreBoard.startGame(anotherHomeTeam, POLAND_TEAM));
 
     //then
     assertTrue(exception.getMessage().contains(expectedExceptionMessage));
@@ -117,7 +122,43 @@ class WorldCupScoreBoardTest {
   }
 
   @Test
-  void finishGame() {
+  void shouldThrowException_whenStartingGame_givenTeamNameIsNull() {
+
+    // given
+    Team nullNameTeam = new Team(null, 0);
+    String expectedExceptionMessage = "Team name is not in the allowed list.";
+
+    // when
+    worldCupScoreBoard.startGame(MEXICO_TEAM, POLAND_TEAM);
+    Exception exception = assertThrows(ScoreBoardException.class, () -> worldCupScoreBoard.startGame(nullNameTeam, MEXICO_TEAM));
+
+    //then
+    assertTrue(exception.getMessage().contains(expectedExceptionMessage));
+  }
+
+  // finishing game
+  // 1. positive case
+  // 2. positive case - finishing match but team names swapped
+  // 3. positive case - non-existing match - do nothing
+  // 4. positive case - non-existing match i.e. team name is null - do nothing
+  @ParameterizedTest
+  @CsvSource({
+      "Germany, Italy, 1",
+      "Italy, Germany, 1",
+      "Poland, Germany, 2",
+      "null, Germany, 2"
+  })
+  void shouldFinishGameOrDoNothing_whenInvoked_givenVariousParameters(String homeTeamName, String awayTeamName, int expectedNumberOfMatches) {
+
+    // given
+    worldCupScoreBoard.startGame(MEXICO_TEAM, POLAND_TEAM);
+    worldCupScoreBoard.startGame(GERMANY_TEAM, ITALY_TEAM);
+
+    // when
+    worldCupScoreBoard.finishGame(homeTeamName, awayTeamName);
+
+    // then
+    assertEquals(expectedNumberOfMatches, worldCupScoreBoard.getSummary().size());
   }
 
   @Test

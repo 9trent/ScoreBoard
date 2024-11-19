@@ -30,8 +30,18 @@ public class WorldCupScoreBoard implements ScoreBoard {
   }
 
   @Override
-  public void finishGame(Team homeTeam, Team awayTeam) {
+  public void finishGame(String homeTeamName, String awayTeamName) {
 
+    boolean removed = matches.removeIf(match ->
+        (match.getHomeTeam().getName().equals(homeTeamName) && match.getAwayTeam().getName().equals(awayTeamName)) ||
+            (match.getHomeTeam().getName().equals(awayTeamName) && match.getAwayTeam().getName().equals(homeTeamName))
+    );
+
+    if (removed) {
+      System.out.println("Match finished: " + homeTeamName + " vs " + awayTeamName + " removed from the scoreboard.");
+    } else {
+      System.out.println("Match not found: " + homeTeamName + " vs " + awayTeamName + ", no match has been finished.");
+    }
   }
 
   @Override
