@@ -1,27 +1,37 @@
 package org.example;
 
+import org.example.api.Match;
 import org.example.api.ScoreBoard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WorldCupScoreBoard implements ScoreBoard {
+
+  private final List<Match> matches;
+
+  public WorldCupScoreBoard() {
+    this.matches = new ArrayList<>();
+  }
+
   @Override
-  public void startGame(String homeTeam, String awayTeam) {
+  public void startGame(Team homeTeam, Team awayTeam) {
+
+    matches.add(new SoccerMatch(homeTeam, awayTeam));
+  }
+
+  @Override
+  public void finishGame(Team homeTeam, Team awayTeam) {
 
   }
 
   @Override
-  public void finishGame(String homeTeam, String awayTeam) {
+  public void updateScore(Team homeTeam, Team awayTeam) {
 
   }
 
   @Override
-  public void updateScore(String homeTeam, String awayTeam, int homeScore, int awayScore) {
-
-  }
-
-  @Override
-  public List<String> getSummary() {
-    return null;
+  public List<Match> getSummary() {
+    return matches;
   }
 }

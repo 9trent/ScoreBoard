@@ -1,15 +1,17 @@
 package org.example.api;
 
+import org.example.Team;
+
 import java.util.List;
 
 public interface ScoreBoard {
 
-  void startGame(String homeTeam, String awayTeam);
+  void startGame(Team homeTeam, Team awayTeam);
 
-  void finishGame(String homeTeam, String awayTeam);
+  void finishGame(Team homeTeam, Team awayTeam);
 
-  void updateScore(String homeTeam, String awayTeam, int homeScore, int awayScore);
+  void updateScore(Team homeTeam, Team awayTeam);
 
-  List<String> getSummary();
+  List<Match> getSummary();
 
 }
