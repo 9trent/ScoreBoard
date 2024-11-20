@@ -21,4 +21,20 @@ public class SoccerMatch implements Match {
   public Team getAwayTeam() {
     return awayTeam;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    SoccerMatch that = (SoccerMatch) o;
+    return homeTeam.equals(that.homeTeam) && awayTeam.equals(that.awayTeam);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = homeTeam.hashCode();
+    result = 31 * result + awayTeam.hashCode();
+    return result;
+  }
 }

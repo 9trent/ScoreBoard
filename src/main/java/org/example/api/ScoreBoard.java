@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ScoreBoard {
 
-  void startGame(Team homeTeam, Team awayTeam);
+  void startGame(String homeTeam, String awayTeam);
 
   void finishGame(String homeTeamName, String awayTeamName);
 

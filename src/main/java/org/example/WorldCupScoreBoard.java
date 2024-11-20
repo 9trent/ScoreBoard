@@ -6,6 +6,7 @@ import org.example.exception.ScoreBoardException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class WorldCupScoreBoard implements ScoreBoard {
 
@@ -18,15 +19,15 @@ public class WorldCupScoreBoard implements ScoreBoard {
   }
 
   @Override
-  public void startGame(Team homeTeam, Team awayTeam) {
+  public void startGame(String homeTeam, String awayTeam) {
 
     if (homeTeam == null || awayTeam == null) {
       throw new ScoreBoardException("Team cannot be null.");
     }
 
-    validateTeamNames(homeTeam.getName(), awayTeam.getName());
+    validateTeamNames(homeTeam, awayTeam);
 
-    matches.add(new SoccerMatch(homeTeam, awayTeam));
+    matches.add(new SoccerMatch(new Team(homeTeam, 0), new Team(awayTeam, 0)));
   }
 
   @Override
@@ -47,6 +48,27 @@ public class WorldCupScoreBoard implements ScoreBoard {
   @Override
   public void updateScore(Team homeTeam, Team awayTeam) {
 
+    if (homeTeam.getScore() < 0 || awayTeam.getScore() < 0) {
+      throw new ScoreBoardException("Score cannot be negative.");
+    }
+
+    Optional<Match> matchToUpdate = matches.stream()
+        .filter(match -> match.getHomeTeam().getName().equals(homeTeam.getName()) && match.getAwayTeam().getName().equals(awayTeam.getName())
+            || match.getHomeTeam().getName().equals(awayTeam.getName()) && match.getAwayTeam().getName().equals(homeTeam.getName()))
+        .findFirst();
+
+    matchToUpdate.ifPresentOrElse(match -> {
+      if (match.getHomeTeam().getName().equals(homeTeam.getName())) {
+        match.getHomeTeam().setScore(homeTeam.getScore());
+        match.getAwayTeam().setScore(awayTeam.getScore());
+      } else {
+        match.getHomeTeam().setScore(awayTeam.getScore());
+        match.getAwayTeam().setScore(homeTeam.getScore());
+      }
+    }, () -> {
+      System.out.println("Match not found: " + homeTeam + " vs " + awayTeam + ". Starting a new match with initial score 0-0.");
+      startGame(homeTeam.getName(), awayTeam.getName());
+    });
   }
 
   @Override
@@ -54,25 +76,25 @@ public class WorldCupScoreBoard implements ScoreBoard {
     return matches;
   }
 
-  private void validateTeamNames(String homeTeam, String awayTeam) {
+  private void validateTeamNames(String homeTeamName, String awayTeamName) {
 
-    if (!allowedTeamNames.contains(homeTeam) || !allowedTeamNames.contains(awayTeam)) {
+    if (!allowedTeamNames.contains(homeTeamName) || !allowedTeamNames.contains(awayTeamName)) {
       throw new ScoreBoardException("Team name is not in the allowed list.");
     }
 
-    if (homeTeam.equals(awayTeam)) {
+    if (homeTeamName.equals(awayTeamName)) {
       throw new ScoreBoardException("A team cannot play against itself.");
     }
 
-    if (isTeamAlreadyPlaying(homeTeam, awayTeam)) {
+    if (isTeamAlreadyPlaying(homeTeamName, awayTeamName)) {
       throw new ScoreBoardException("One or both teams are already playing.");
     }
   }
 
-  private boolean isTeamAlreadyPlaying(String homeTeam, String awayTeam) {
+  private boolean isTeamAlreadyPlaying(String homeTeamName, String awayTeamName) {
 
     return matches.stream()
-        .anyMatch(match -> match.getHomeTeam().getName().equals(homeTeam) || match.getAwayTeam().getName().equals(homeTeam) ||
-            match.getHomeTeam().getName().equals(awayTeam) || match.getAwayTeam().getName().equals(awayTeam));
+        .anyMatch(match -> match.getHomeTeam().getName().equals(homeTeamName) || match.getAwayTeam().getName().equals(homeTeamName) ||
+            match.getHomeTeam().getName().equals(awayTeamName) || match.getAwayTeam().getName().equals(awayTeamName));
   }
 }
