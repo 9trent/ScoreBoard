@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.api.Match;
 import org.example.exception.ScoreBoardException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ class WorldCupScoreBoardTest {
   private static final String GERMANY = "Germany";
   private static final String ITALY = "Italy";
   private static final String SPAIN = "Spain";
+  private static final String BRAZIL = "Brazil";
 
   WorldCupScoreBoard worldCupScoreBoard;
 
@@ -29,14 +31,6 @@ class WorldCupScoreBoardTest {
         "Poland");
     worldCupScoreBoard = new WorldCupScoreBoard(allowedTeams);
   }
-
-  // starting game
-  // 1. positive case
-  // 2. negative case - ono or both teams are null
-  // 3. negative case - one team name is same as team name in existing match
-  // 4. negative case - same name for homeTeam and awayTeam
-  // 5. negative case - one team name is invalid
-  // 6. negative case - names swapped
 
   @Test
   void shouldStartGame_whenInvoked_givenValidTeamsName() {
@@ -121,11 +115,6 @@ class WorldCupScoreBoardTest {
     assertTrue(exception.getMessage().contains(expectedExceptionMessage));
   }
 
-  // finishing game
-  // 1. positive case
-  // 2. positive case - finishing match but team names swapped
-  // 3. positive case - non-existing match - do nothing
-  // 4. positive case - non-existing match i.e. team name is null - do nothing
   @ParameterizedTest
   @CsvSource({
       "Germany, Italy, 1",
@@ -146,14 +135,6 @@ class WorldCupScoreBoardTest {
     assertEquals(expectedNumberOfMatches, worldCupScoreBoard.getSummary().size());
   }
 
-  // update score
-  // 1. positive case
-  // 2. positive case - updating by more than 1 goal at a time
-  // 3. positive case - updating score down
-  // 4. positive case - updating score with team names swapped
-  // 5. positive case - updating score for non-existing match and none of the team is already playing - starting a new match
-  // 6. negative case - updating score for non-existing match and one of the team is already playing - throw exception
-  // 7. negative case - updating score to negative
   @Test
   void shouldUpdateScore_whenInvoked_givenScoreUpdateByOneGoal() {
 
@@ -317,8 +298,104 @@ class WorldCupScoreBoardTest {
     assertTrue(exception.getMessage().contains(expectedExceptionMessage));
   }
 
+  @Test
+  void shouldReturnEmptyList_whenInvoked_givenNoMatchesPresent() {
+
+    // when
+    List<Match> summary = worldCupScoreBoard.getSummary();
+
+    // then
+    assertTrue(summary.isEmpty());
+  }
 
   @Test
-  void getSummary() {
+  void shouldReturnSingleMatch_whenInvoked_givenOnlyOneMatchPresent() {
+
+    // given
+    worldCupScoreBoard.startGame(MEXICO, POLAND);
+
+    // when
+    List<Match> summary = worldCupScoreBoard.getSummary();
+
+    // then
+    assertEquals(1, summary.size());
+    assertEquals(MEXICO, summary.get(0).getHomeTeam().getName());
+    assertEquals(POLAND, summary.get(0).getAwayTeam().getName());
+  }
+
+  @Test
+  void shouldReturnMatchesInCorrectOrder_whenInvoked_givenDifferentTotalScores() {
+
+    // given
+    worldCupScoreBoard.startGame(MEXICO, POLAND);
+    worldCupScoreBoard.startGame(GERMANY, ITALY);
+    worldCupScoreBoard.startGame(SPAIN, BRAZIL);
+    List<Match> expectedMatches = List.of(
+        new SoccerMatch(new Team(SPAIN, 3), new Team(BRAZIL, 3)),
+        new SoccerMatch(new Team(GERMANY, 2), new Team(ITALY, 2)),
+        new SoccerMatch(new Team(MEXICO, 1), new Team(POLAND, 1))
+    );
+
+    // when
+    worldCupScoreBoard.updateScore(new Team(SPAIN, 3), new Team(BRAZIL, 3));
+    worldCupScoreBoard.updateScore(new Team(MEXICO, 1), new Team(POLAND, 1));
+    worldCupScoreBoard.updateScore(new Team(GERMANY, 2), new Team(ITALY, 2));
+
+    // then
+    List<Match> summary = worldCupScoreBoard.getSummary();
+    assertEquals(expectedMatches.size(), summary.size());
+    for (int i = 0; i < expectedMatches.size(); i++) {
+      assertEquals(expectedMatches.get(i), summary.get(i));
+    }
+  }
+
+  @Test
+  void shouldReturnMatchesInOrderAdded_whenGetSummary_givenNoScoresUpdated() {
+
+    // given
+    worldCupScoreBoard.startGame(MEXICO, POLAND);
+    worldCupScoreBoard.startGame(GERMANY, ITALY);
+    worldCupScoreBoard.startGame(SPAIN, BRAZIL);
+    List<Match> expectedMatches = List.of(
+        new SoccerMatch(new Team(SPAIN, 0), new Team(BRAZIL, 0)),
+        new SoccerMatch(new Team(GERMANY, 0), new Team(ITALY, 0)),
+        new SoccerMatch(new Team(MEXICO, 0), new Team(POLAND, 0))
+    );
+
+    // when
+    List<Match> summary = worldCupScoreBoard.getSummary();
+
+    // then
+    assertEquals(expectedMatches.size(), summary.size());
+    for (int i = 0; i < expectedMatches.size(); i++) {
+      assertEquals(expectedMatches.get(i), summary.get(i));
+    }
+  }
+
+  @Test
+  void shouldReturnMatchesInCorrectOrder_whenInvoked_givenMultipleMatchesHaveSameTotalScore() {
+
+    // given
+    worldCupScoreBoard.startGame(MEXICO, POLAND);
+    worldCupScoreBoard.startGame(GERMANY, ITALY);
+    worldCupScoreBoard.startGame(SPAIN, BRAZIL);
+
+    List<Match> expectedMatches = List.of(
+        new SoccerMatch(new Team(SPAIN, 2), new Team(BRAZIL, 2)),
+        new SoccerMatch(new Team(GERMANY, 1), new Team(ITALY, 3)),
+        new SoccerMatch(new Team(MEXICO, 2), new Team(POLAND, 2))
+    );
+
+    // when
+    worldCupScoreBoard.updateScore(new Team(GERMANY, 1), new Team(ITALY, 3));
+    worldCupScoreBoard.updateScore(new Team(MEXICO, 2), new Team(POLAND, 2));
+    worldCupScoreBoard.updateScore(new Team(SPAIN, 2), new Team(BRAZIL, 2));
+
+    // then
+    List<Match> summary = worldCupScoreBoard.getSummary();
+    assertEquals(expectedMatches.size(), summary.size());
+    for (int i = 0; i < expectedMatches.size(); i++) {
+      assertEquals(expectedMatches.get(i), summary.get(i));
+    }
   }
 }

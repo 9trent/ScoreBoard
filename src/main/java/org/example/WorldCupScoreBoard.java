@@ -5,8 +5,10 @@ import org.example.api.ScoreBoard;
 import org.example.exception.ScoreBoardException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class WorldCupScoreBoard implements ScoreBoard {
 
@@ -73,7 +75,12 @@ public class WorldCupScoreBoard implements ScoreBoard {
 
   @Override
   public List<Match> getSummary() {
-    return matches;
+
+    return matches.stream()
+        .sorted(Comparator.comparingInt(Match::getTotalScore)
+            .reversed()
+            .thenComparing((match1, match2) -> Integer.compare(matches.indexOf(match2), matches.indexOf(match1))))
+        .collect(Collectors.toList());
   }
 
   private void validateTeamNames(String homeTeamName, String awayTeamName) {

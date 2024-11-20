@@ -4,8 +4,8 @@ import org.example.api.Match;
 
 public class SoccerMatch implements Match {
 
-  private Team homeTeam;
-  private Team awayTeam;
+  private final Team homeTeam;
+  private final Team awayTeam;
 
   public SoccerMatch(Team homeTeam, Team awayTeam) {
     this.homeTeam = homeTeam;
@@ -20,6 +20,11 @@ public class SoccerMatch implements Match {
   @Override
   public Team getAwayTeam() {
     return awayTeam;
+  }
+
+  @Override
+  public int getTotalScore() {
+    return homeTeam.getScore() + awayTeam.getScore();
   }
 
   @Override
