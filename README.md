@@ -14,4 +14,4 @@ Assumptions:
 4. Score update without any change is ignored.
 5. Updating a score for a non-existing match will create a new match with an initial score of 0-0 regardless of what score was passed.
 6. Finishing a non-existing match will show info that no such match was found and nothing was finished. As mentioned earlier, a match is finished if a playing pair is found, regardless of team name order.
-7. All System.out.println... indtuctions were left intentionally for better clarity in the console output. Therefore, they are not taken into consideration in the test cases. Also, App class with main method contains some method invocations and commented code. This was left intentionally.
+7. All System.out.println... instructions were left intentionally for better clarity in the console output. Therefore, they are not taken into consideration in the test cases. Also, App class with main method contains some method invocations and commented code. This was left intentionally.
